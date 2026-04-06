@@ -69,35 +69,35 @@ plasma-applet-rplmonitor/
 ## Roadmap
 
 ### v0.1 — MVP
-- [ ] Structure de base du projet
-- [ ] Metadata.json valide
-- [ ] main.qml qui s'affiche dans Plasma
-- [ ] Lecture basique CPU depuis /proc/stat
-- [ ] Affichage d'un pourcentage CPU en texte
+- [x] Structure de base du projet
+- [x] Metadata.json valide
+- [x] main.qml qui s'affiche dans Plasma
+- [x] Lecture basique CPU depuis /proc/stat
+- [x] Affichage d'un pourcentage CPU en texte
 
 ### v0.2 — Graphes de base
-- [ ] Graphe CPU historique (50 derniers ticks)
-- [ ] Graphe RAM avec bar et pourcentage
-- [ ] Update timer configurable (défaut 1s)
+- [x] Graphe CPU historique (50 derniers ticks)
+- [x] Graphe RAM avec bar et pourcentage
+- [x] Update timer configurable (défaut 1s)
 
 ### v0.3 — Multi-core et réseau
-- [ ] Bars individuelles par core CPU (style btop)
-- [ ] Graphe réseau up/down
-- [ ] Détection automatique de l'interface réseau principale
+- [x] Bars individuelles par core CPU (style btop)
+- [x] Graphe réseau up/down
+- [x] Détection automatique de l'interface réseau principale
 
 ### v0.4 — Theming
-- [ ] Theme "btop" par défaut (couleurs vives vert/cyan/jaune)
-- [ ] Theme "minimal" (monochrome)
-- [ ] Panneau de configuration KDE
+- [x] Theme "btop" par défaut (couleurs vives vert/cyan/jaune)
+- [x] Theme "minimal" (monochrome)
+- [x] Panneau de configuration KDE
 
 ### v0.5 — Extras
-- [ ] Températures CPU/GPU via lm-sensors
-- [ ] Top 5 processus par CPU
-- [ ] Graphe disque I/O
-- [ ] Tooltip détaillé au hover
+- [x] Températures CPU/GPU via lm-sensors
+- [x] Top 5 processus par CPU
+- [x] Graphe disque I/O
+- [x] Tooltip détaillé au hover
 
 ### v1.0 — Release publique
-- [ ] Documentation README complète
+- [x] Documentation README complète
 - [ ] Screenshots pour le KDE Store
 - [ ] Package .plasmoid
 - [ ] Publication sur store.kde.org
@@ -158,7 +158,16 @@ Chaque nouveau projet sous la marque RPL doit maintenir la cohérence visuelle e
 
 ## État actuel
 
-**v0.1 MVP en cours.** Le widget affiche un pourcentage CPU en temps réel dans le panneau et une barre de progression dans le popup.
+**v0.5 complet.** Toutes les features du roadmap pré-1.0 sont implémentées:
+- CPU: graphe historique 50 ticks + bars par core (btop style)
+- RAM/Swap: bars avec pourcentages et GB
+- Réseau: graphe dual download/upload avec auto-détection interface
+- Disque: graphe I/O read/write
+- Températures: CPU via /sys/class/thermal + GPU via hwmon
+- Processus: top 5 par CPU via PlasmaCore.DataSource (ps)
+- 3 themes: btop (Dracula), minimal (monochrome), terminal (green CRT)
+- Config panel KDE: toggles par section, choix du theme, intervalle configurable
+- Tooltip détaillé: CPU%, RAM, Swap, vitesses réseau
 
 ---
 

@@ -15,10 +15,21 @@ PlasmoidItem {
 
     toolTipMainText: "RPL Monitor"
     toolTipSubText: {
-        var parts = [];
-        parts.push(cpuReader.cpuPercent + "% CPU");
-        parts.push(ramReader.usedGB.toFixed(1) + "/" + ramReader.totalGB.toFixed(1) + " GB RAM");
-        return parts.join(" | ");
+        var lines = [];
+        lines.push("CPU: " + cpuReader.cpuPercent + "%");
+        lines.push("RAM: " + ramReader.usedGB.toFixed(1) + "/" + ramReader.totalGB.toFixed(1) + " GB (" + ramReader.usedPercent + "%)");
+        if (ramReader.swapTotalGB > 0)
+            lines.push("Swap: " + ramReader.swapUsedGB.toFixed(1) + "/" + ramReader.swapTotalGB.toFixed(1) + " GB");
+        if (netReader.activeInterface)
+            lines.push("Net: ↓" + formatSpeed(netReader.downloadSpeed) + " ↑" + formatSpeed(netReader.uploadSpeed));
+        return lines.join("\n");
+    }
+
+    // Format bytes/sec to human readable string
+    function formatSpeed(bytesPerSec) {
+        if (bytesPerSec >= 1048576) return (bytesPerSec / 1048576).toFixed(1) + " MB/s";
+        if (bytesPerSec >= 1024) return (bytesPerSec / 1024).toFixed(1) + " KB/s";
+        return Math.round(bytesPerSec) + " B/s";
     }
 
     // Configurable update interval (milliseconds)
