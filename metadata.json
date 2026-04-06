@@ -1,0 +1,20 @@
+{
+    "KPlugin": {
+        "Id": "org.rpl.rplmonitor",
+        "Name": "RPL Monitor",
+        "Description": "A btop-style system monitor widget for KDE Plasma",
+        "Icon": "utilities-system-monitor",
+        "Authors": [
+            {
+                "Name": "Pier-Luc",
+                "Email": ""
+            }
+        ],
+        "Category": "System Information",
+        "License": "GPL-3.0",
+        "Version": "0.1.0",
+        "Website": "https://github.com/rpl-net/plasma-applet-rplmonitor"
+    },
+    "KPackageStructure": "Plasma/Applet",
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
