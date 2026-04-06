@@ -9,7 +9,10 @@ import org.kde.plasma.core as PlasmaCore
 PlasmoidItem {
     id: root
 
-    compactRepresentation: CompactRepresentation {}
+    compactRepresentation: CompactRepresentation {
+        themeHigh: root.themeColors.cpuHigh
+        themeMid: root.themeColors.cpuMid
+    }
     fullRepresentation: FullRepresentation {}
     preferredRepresentation: compactRepresentation
 
@@ -32,8 +35,33 @@ PlasmoidItem {
         return Math.round(bytesPerSec) + " B/s";
     }
 
+    // Theme colors exposed for child components (CompactRepresentation)
+    readonly property var themeColors: {
+        var name = Plasmoid.configuration.theme || "btop";
+        if (name === "minimal") return { cpuHigh: "#cccccc", cpuMid: "#aaaaaa", cpuLow: "#aaaaaa" };
+        if (name === "terminal") return { cpuHigh: "#ff3333", cpuMid: "#ffb000", cpuLow: "#00ff41" };
+        return { cpuHigh: "#ff5555", cpuMid: "#f1fa8c", cpuLow: "#50fa7b" };
+    }
+
     // Configurable update interval (milliseconds), clamped to safe range
     property int updateInterval: Math.max(250, Plasmoid.configuration.updateInterval || 1000)
+
+    // Helper: read a local file via XHR with timeout protection
+    function readFile(path, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", path);
+        xhr.timeout = 5000;
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                var text = xhr.responseText || "";
+                if (text.length > 0) callback(text);
+            }
+        };
+        xhr.ontimeout = function() {
+            console.warn("RPLMonitor: timeout reading " + path);
+        };
+        xhr.send();
+    }
 
     // --- CPU data reader ---
     // Reads /proc/stat and computes total + per-core CPU usage
@@ -52,17 +80,7 @@ PlasmoidItem {
         property var prevCoreTotal: []
 
         function readCpuUsage() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/proc/stat");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    var text = xhr.responseText || "";
-                    if (text.length > 0) {
-                        parseProcStat(text);
-                    }
-                }
-            };
-            xhr.send();
+            root.readFile("/proc/stat", parseProcStat);
         }
 
         function parseProcStat(text) {
@@ -143,17 +161,7 @@ PlasmoidItem {
         property int swapPercent: 0
 
         function readMemInfo() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/proc/meminfo");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    var text = xhr.responseText || "";
-                    if (text.length > 0) {
-                        parseMemInfo(text);
-                    }
-                }
-            };
-            xhr.send();
+            root.readFile("/proc/meminfo", parseMemInfo);
         }
 
         function parseMemInfo(text) {
@@ -204,17 +212,7 @@ PlasmoidItem {
         property bool firstRead: true
 
         function readNetDev() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/proc/net/dev");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    var text = xhr.responseText || "";
-                    if (text.length > 0) {
-                        parseNetDev(text);
-                    }
-                }
-            };
-            xhr.send();
+            root.readFile("/proc/net/dev", parseNetDev);
         }
 
         function parseNetDev(text) {
@@ -293,17 +291,7 @@ PlasmoidItem {
         property string diskName: ""
 
         function readDiskStats() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/proc/diskstats");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    var text = xhr.responseText || "";
-                    if (text.length > 0) {
-                        parseDiskStats(text);
-                    }
-                }
-            };
-            xhr.send();
+            root.readFile("/proc/diskstats", parseDiskStats);
         }
 
         function parseDiskStats(text) {

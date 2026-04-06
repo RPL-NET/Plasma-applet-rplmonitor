@@ -1,5 +1,6 @@
 // RAMGraph.qml — RAM and Swap usage bars
 // Shows memory usage as horizontal bars with labels
+// Colors are passed in from the parent via theme properties
 
 import QtQuick
 import QtQuick.Layouts
@@ -15,6 +16,12 @@ ColumnLayout {
     property real swapTotalGB: 0
     property real swapUsedGB: 0
     property int swapPercent: 0
+
+    // Theme colors (passed from FullRepresentation)
+    property color colorHigh: "#ff5555"
+    property color colorMid: "#f1fa8c"
+    property color colorRam: "#8be9fd"
+    property color colorSwap: "#bd93f9"
 
     spacing: Kirigami.Units.smallSpacing
 
@@ -45,9 +52,9 @@ ColumnLayout {
                 width: Math.max(0, (parent.width - 2) * ramGraph.usedPercent / 100)
                 radius: 2
                 color: {
-                    if (ramGraph.usedPercent > 80) return "#ff5555";
-                    if (ramGraph.usedPercent > 60) return "#f1fa8c";
-                    return "#8be9fd";
+                    if (ramGraph.usedPercent > 80) return ramGraph.colorHigh;
+                    if (ramGraph.usedPercent > 60) return ramGraph.colorMid;
+                    return ramGraph.colorRam;
                 }
 
                 Behavior on width {
@@ -93,9 +100,9 @@ ColumnLayout {
                 width: Math.max(0, (parent.width - 2) * ramGraph.swapPercent / 100)
                 radius: 2
                 color: {
-                    if (ramGraph.swapPercent > 50) return "#ff5555";
-                    if (ramGraph.swapPercent > 25) return "#f1fa8c";
-                    return "#bd93f9";
+                    if (ramGraph.swapPercent > 50) return ramGraph.colorHigh;
+                    if (ramGraph.swapPercent > 25) return ramGraph.colorMid;
+                    return ramGraph.colorSwap;
                 }
 
                 Behavior on width {

@@ -1,5 +1,5 @@
 // TempDisplay.qml — CPU/GPU temperature display
-// Reads temperatures from /sys/class/thermal and /sys/class/hwmon
+// Reads temperatures passed as array and shows bars with colors
 
 import QtQuick
 import QtQuick.Layouts
@@ -10,6 +10,19 @@ ColumnLayout {
     id: tempDisplay
 
     property var temperatures: []  // [{name: "CPU", temp: 45}, ...]
+
+    // Theme colors (passed from FullRepresentation)
+    property color colorCool: "#50fa7b"
+    property color colorWarm: "#f1fa8c"
+    property color colorHot: "#ffb86c"
+    property color colorCritical: "#ff5555"
+
+    function tempColor(degrees) {
+        if (degrees > 80) return colorCritical;
+        if (degrees > 60) return colorHot;
+        if (degrees > 40) return colorWarm;
+        return colorCool;
+    }
 
     spacing: Kirigami.Units.smallSpacing
 
@@ -26,7 +39,7 @@ ColumnLayout {
             spacing: Kirigami.Units.smallSpacing
 
             PlasmaComponents.Label {
-                text: modelData.name
+                text: modelData.name || "?"
                 font.family: "monospace"
                 font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                 Layout.minimumWidth: Kirigami.Units.gridUnit * 3
@@ -45,29 +58,19 @@ ColumnLayout {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.margins: 1
-                    // Scale: 0-100 degrees C
-                    width: Math.max(0, (parent.width - 2) * Math.min(modelData.temp, 100) / 100)
+                    width: Math.max(0, (parent.width - 2) * Math.min(modelData.temp, 110) / 110)
                     radius: 1
-                    color: {
-                        if (modelData.temp > 80) return "#ff5555";
-                        if (modelData.temp > 60) return "#ffb86c";
-                        if (modelData.temp > 40) return "#f1fa8c";
-                        return "#50fa7b";
-                    }
+                    color: tempDisplay.tempColor(modelData.temp)
                 }
             }
 
             PlasmaComponents.Label {
-                text: modelData.temp + "°C"
+                text: modelData.temp + "\u00B0C"
                 font.family: "monospace"
                 font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                 Layout.minimumWidth: Kirigami.Units.gridUnit * 2.5
                 horizontalAlignment: Text.AlignRight
-                color: {
-                    if (modelData.temp > 80) return "#ff5555";
-                    if (modelData.temp > 60) return "#ffb86c";
-                    return Kirigami.Theme.textColor;
-                }
+                color: tempDisplay.tempColor(modelData.temp)
             }
         }
     }

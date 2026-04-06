@@ -11,7 +11,8 @@ KCM.SimpleKCM {
     id: configPage
 
     property alias cfg_updateInterval: updateIntervalSpinBox.value
-    property string cfg_theme
+    // Initialized from saved config, defaults to "btop" on first use
+    property string cfg_theme: Plasmoid.configuration.theme || "btop"
     property alias cfg_showCpuGraph: showCpuGraphCheck.checked
     property alias cfg_showPerCore: showPerCoreCheck.checked
     property alias cfg_showRam: showRamCheck.checked

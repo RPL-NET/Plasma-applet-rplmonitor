@@ -10,6 +10,7 @@ Item {
     property var history: []
     property color lineColor: "#50fa7b"
     property color fillColor: Qt.rgba(lineColor.r, lineColor.g, lineColor.b, 0.2)
+    property color gridColor: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.1)
 
     Canvas {
         id: canvas
@@ -31,11 +32,7 @@ Item {
             for (var i = startIdx; i < data.length; i++) {
                 var x = (i - startIdx) * stepX;
                 var y = height - (data[i] / 100) * height;
-                if (i === startIdx) {
-                    ctx.lineTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
+                ctx.lineTo(x, y);
             }
             ctx.lineTo((data.length - 1 - startIdx) * stepX, height);
             ctx.closePath();
@@ -58,7 +55,7 @@ Item {
             ctx.stroke();
 
             // Grid lines at 25%, 50%, 75%
-            ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.1);
+            ctx.strokeStyle = cpuGraph.gridColor;
             ctx.lineWidth = 1;
             for (var g = 1; g <= 3; g++) {
                 var gy = height - (height * g / 4);

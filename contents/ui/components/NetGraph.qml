@@ -1,5 +1,5 @@
 // NetGraph.qml — Network upload/download speed graph
-// Dual-line area chart showing download (cyan) and upload (magenta)
+// Dual-line area chart showing download and upload speeds
 
 import QtQuick
 import QtQuick.Layouts
@@ -14,6 +14,10 @@ ColumnLayout {
     property real uploadSpeed: 0
     property var downloadHistory: []
     property var uploadHistory: []
+
+    // Theme colors (passed from FullRepresentation)
+    property color colorDown: "#8be9fd"
+    property color colorUp: "#ff79c6"
 
     spacing: Kirigami.Units.smallSpacing
 
@@ -38,14 +42,14 @@ ColumnLayout {
             text: "↓ " + formatSpeed(netGraph.downloadSpeed)
             font.family: "monospace"
             font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-            color: "#8be9fd"
+            color: netGraph.colorDown
         }
 
         PlasmaComponents.Label {
             text: "↑ " + formatSpeed(netGraph.uploadSpeed)
             font.family: "monospace"
             font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-            color: "#ff79c6"
+            color: netGraph.colorUp
         }
     }
 
@@ -69,8 +73,8 @@ ColumnLayout {
             for (var j = 0; j < ulData.length; j++) maxVal = Math.max(maxVal, ulData[j]);
             maxVal *= 1.1; // 10% headroom
 
-            drawLine(ctx, dlData, "#8be9fd", Qt.rgba(0.545, 0.914, 0.992, 0.15), maxVal);
-            drawLine(ctx, ulData, "#ff79c6", Qt.rgba(1, 0.475, 0.776, 0.15), maxVal);
+            drawLine(ctx, dlData, netGraph.colorDown, Qt.rgba(netGraph.colorDown.r, netGraph.colorDown.g, netGraph.colorDown.b, 0.15), maxVal);
+            drawLine(ctx, ulData, netGraph.colorUp, Qt.rgba(netGraph.colorUp.r, netGraph.colorUp.g, netGraph.colorUp.b, 0.15), maxVal);
         }
 
         function drawLine(ctx, data, lineColor, fillColor, maxVal) {

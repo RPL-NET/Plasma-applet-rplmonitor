@@ -1,5 +1,5 @@
 // DiskGraph.qml — Disk I/O read/write speed display
-// Shows read (green) and write (yellow) throughput with mini graph
+// Shows read and write throughput with mini graph
 
 import QtQuick
 import QtQuick.Layouts
@@ -13,6 +13,10 @@ ColumnLayout {
     property real writeSpeed: 0
     property var readHistory: []
     property var writeHistory: []
+
+    // Theme colors (passed from FullRepresentation)
+    property color colorRead: "#50fa7b"
+    property color colorWrite: "#f1fa8c"
 
     spacing: Kirigami.Units.smallSpacing
 
@@ -31,14 +35,14 @@ ColumnLayout {
             text: "R " + formatSpeed(diskGraph.readSpeed)
             font.family: "monospace"
             font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-            color: "#50fa7b"
+            color: diskGraph.colorRead
         }
 
         PlasmaComponents.Label {
             text: "W " + formatSpeed(diskGraph.writeSpeed)
             font.family: "monospace"
             font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-            color: "#f1fa8c"
+            color: diskGraph.colorWrite
         }
     }
 
@@ -61,8 +65,8 @@ ColumnLayout {
             for (var j = 0; j < wData.length; j++) maxVal = Math.max(maxVal, wData[j]);
             maxVal *= 1.1;
 
-            drawArea(ctx, rData, "#50fa7b", Qt.rgba(0.314, 0.98, 0.482, 0.15), maxVal);
-            drawArea(ctx, wData, "#f1fa8c", Qt.rgba(0.945, 0.98, 0.549, 0.15), maxVal);
+            drawArea(ctx, rData, diskGraph.colorRead, Qt.rgba(diskGraph.colorRead.r, diskGraph.colorRead.g, diskGraph.colorRead.b, 0.15), maxVal);
+            drawArea(ctx, wData, diskGraph.colorWrite, Qt.rgba(diskGraph.colorWrite.r, diskGraph.colorWrite.g, diskGraph.colorWrite.b, 0.15), maxVal);
         }
 
         function drawArea(ctx, data, lineColor, fillColor, maxVal) {

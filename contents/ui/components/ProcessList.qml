@@ -11,6 +11,10 @@ ColumnLayout {
 
     property var processes: []  // [{name: "firefox", cpu: 12.3, mem: 5.1}, ...]
 
+    // Theme colors (passed from FullRepresentation)
+    property color colorHigh: "#ff5555"
+    property color colorMid: "#f1fa8c"
+
     spacing: Kirigami.Units.smallSpacing
 
     // Header
@@ -65,8 +69,8 @@ ColumnLayout {
                 Layout.minimumWidth: Kirigami.Units.gridUnit * 3
                 horizontalAlignment: Text.AlignRight
                 color: {
-                    if (cpuVal > 50) return "#ff5555";
-                    if (cpuVal > 25) return "#f1fa8c";
+                    if (cpuVal > 50) return processList.colorHigh;
+                    if (cpuVal > 25) return processList.colorMid;
                     return Kirigami.Theme.textColor;
                 }
             }

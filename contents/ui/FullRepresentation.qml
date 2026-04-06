@@ -137,6 +137,7 @@ Item {
             var path = "/sys/class/thermal/thermal_zone" + zoneIdx + "/temp";
             var xhr = new XMLHttpRequest();
             xhr.open("GET", path);
+            xhr.timeout = 2000;
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     var text = (xhr.responseText || "").trim();
@@ -149,6 +150,9 @@ Item {
                     }
                     readZone(temps, zoneIdx + 1);
                 }
+            };
+            xhr.ontimeout = function() {
+                readZone(temps, zoneIdx + 1); // Skip timed-out zone
             };
             xhr.send();
         }
@@ -322,6 +326,10 @@ Item {
                 swapTotalGB: ramReader.swapTotalGB
                 swapUsedGB: ramReader.swapUsedGB
                 swapPercent: ramReader.swapPercent
+                colorHigh: fullRoot.theme.cpuHigh
+                colorMid: fullRoot.theme.cpuMid
+                colorRam: fullRoot.theme.ram
+                colorSwap: fullRoot.theme.swap
                 visible: Plasmoid.configuration.showRam !== false
             }
 
@@ -341,6 +349,8 @@ Item {
                 uploadSpeed: netReader.uploadSpeed
                 downloadHistory: netReader.downloadHistory
                 uploadHistory: netReader.uploadHistory
+                colorDown: fullRoot.theme.netDown
+                colorUp: fullRoot.theme.netUp
                 visible: Plasmoid.configuration.showNetwork !== false
             }
 
@@ -359,6 +369,8 @@ Item {
                 writeSpeed: diskReader.writeSpeed
                 readHistory: diskReader.readHistory
                 writeHistory: diskReader.writeHistory
+                colorRead: fullRoot.theme.diskRead
+                colorWrite: fullRoot.theme.diskWrite
                 visible: Plasmoid.configuration.showDisk !== false
             }
 
@@ -374,6 +386,10 @@ Item {
                 id: tempSection
                 Layout.fillWidth: true
                 visible: Plasmoid.configuration.showTemps !== false
+                colorCool: fullRoot.theme.tempCool
+                colorWarm: fullRoot.theme.tempWarm
+                colorHot: fullRoot.theme.tempHot
+                colorCritical: fullRoot.theme.tempCritical
                 temperatures: {
                     var temps = tempReader.temperatures.slice();
                     if (gpuTempSource.gpuTemp > 0) {
@@ -395,6 +411,8 @@ Item {
                 id: processSection
                 Layout.fillWidth: true
                 processes: processSource.processes
+                colorHigh: fullRoot.theme.cpuHigh
+                colorMid: fullRoot.theme.cpuMid
                 visible: Plasmoid.configuration.showProcesses !== false
             }
 
