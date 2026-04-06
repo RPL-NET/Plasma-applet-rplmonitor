@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- RPL Monitor icon - stylized system monitor with graph -->
+  <!-- Monitor frame -->
+  <rect x="4" y="6" width="40" height="30" rx="3" ry="3" fill="none" stroke="#50fa7b" stroke-width="2"/>
+  <!-- Screen background -->
+  <rect x="6" y="8" width="36" height="26" rx="1" ry="1" fill="#282a36" opacity="0.9"/>
+  <!-- CPU graph line -->
+  <polyline points="8,28 12,24 16,26 20,18 24,20 28,14 32,16 36,12 40,15"
+            fill="none" stroke="#50fa7b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Graph fill -->
+  <polygon points="8,28 12,24 16,26 20,18 24,20 28,14 32,16 36,12 40,15 40,32 8,32"
+           fill="#50fa7b" opacity="0.15"/>
+  <!-- Grid lines -->
+  <line x1="6" y1="16" x2="42" y2="16" stroke="#ffffff" stroke-width="0.5" opacity="0.1"/>
+  <line x1="6" y1="24" x2="42" y2="24" stroke="#ffffff" stroke-width="0.5" opacity="0.1"/>
+  <!-- Monitor stand -->
+  <rect x="18" y="36" width="12" height="3" rx="1" fill="#50fa7b" opacity="0.6"/>
+  <rect x="14" y="39" width="20" height="2" rx="1" fill="#50fa7b" opacity="0.4"/>
+  <!-- RPL text hint -->
+  <text x="24" y="44" text-anchor="middle" font-family="monospace" font-size="3" fill="#50fa7b" opacity="0.5">RPL</text>
+</svg>

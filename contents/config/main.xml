@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+                          http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+    <kcfgfile name=""/>
+
+    <group name="General">
+        <entry name="updateInterval" type="Int">
+            <label>Update interval in milliseconds</label>
+            <default>1000</default>
+            <min>250</min>
+            <max>10000</max>
+        </entry>
+        <entry name="theme" type="String">
+            <label>Color theme</label>
+            <default>btop</default>
+        </entry>
+        <entry name="showCpuGraph" type="Bool">
+            <label>Show CPU history graph</label>
+            <default>true</default>
+        </entry>
+        <entry name="showPerCore" type="Bool">
+            <label>Show per-core CPU bars</label>
+            <default>true</default>
+        </entry>
+        <entry name="showRam" type="Bool">
+            <label>Show RAM usage</label>
+            <default>true</default>
+        </entry>
+        <entry name="showNetwork" type="Bool">
+            <label>Show network graph</label>
+            <default>true</default>
+        </entry>
+        <entry name="showDisk" type="Bool">
+            <label>Show disk I/O</label>
+            <default>true</default>
+        </entry>
+        <entry name="showTemps" type="Bool">
+            <label>Show temperatures</label>
+            <default>true</default>
+        </entry>
+        <entry name="showProcesses" type="Bool">
+            <label>Show top processes</label>
+            <default>true</default>
+        </entry>
+    </group>
+</kcfg>
