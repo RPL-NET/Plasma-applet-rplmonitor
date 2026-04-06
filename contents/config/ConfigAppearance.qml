@@ -11,7 +11,7 @@ KCM.SimpleKCM {
     id: configPage
 
     property alias cfg_updateInterval: updateIntervalSpinBox.value
-    property alias cfg_theme: themeCombo.currentIndex
+    property string cfg_theme
     property alias cfg_showCpuGraph: showCpuGraphCheck.checked
     property alias cfg_showPerCore: showPerCoreCheck.checked
     property alias cfg_showRam: showRamCheck.checked
@@ -43,7 +43,10 @@ KCM.SimpleKCM {
                 i18n("Minimal (Monochrome)"),
                 i18n("Terminal (Green CRT)")
             ]
-            currentIndex: themeNames.indexOf(Plasmoid.configuration.theme)
+            currentIndex: themeNames.indexOf(cfg_theme)
+            onCurrentIndexChanged: {
+                cfg_theme = themeNames[currentIndex] || "btop";
+            }
         }
 
         Kirigami.Separator {
