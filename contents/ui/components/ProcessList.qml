@@ -43,14 +43,14 @@ ColumnLayout {
 
     // Process rows
     Repeater {
-        model: processList.processes
+        model: processList.processes || []
 
         RowLayout {
             Layout.fillWidth: true
             spacing: Kirigami.Units.smallSpacing
 
             PlasmaComponents.Label {
-                text: modelData.name
+                text: modelData.name || "?"
                 font.family: "monospace"
                 font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                 Layout.fillWidth: true
@@ -58,20 +58,22 @@ ColumnLayout {
             }
 
             PlasmaComponents.Label {
-                text: modelData.cpu.toFixed(1)
+                property real cpuVal: (typeof modelData.cpu === "number") ? modelData.cpu : 0
+                text: cpuVal.toFixed(1)
                 font.family: "monospace"
                 font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                 Layout.minimumWidth: Kirigami.Units.gridUnit * 3
                 horizontalAlignment: Text.AlignRight
                 color: {
-                    if (modelData.cpu > 50) return "#ff5555";
-                    if (modelData.cpu > 25) return "#f1fa8c";
+                    if (cpuVal > 50) return "#ff5555";
+                    if (cpuVal > 25) return "#f1fa8c";
                     return Kirigami.Theme.textColor;
                 }
             }
 
             PlasmaComponents.Label {
-                text: modelData.mem.toFixed(1)
+                property real memVal: (typeof modelData.mem === "number") ? modelData.mem : 0
+                text: memVal.toFixed(1)
                 font.family: "monospace"
                 font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                 Layout.minimumWidth: Kirigami.Units.gridUnit * 3
@@ -82,7 +84,7 @@ ColumnLayout {
 
     // Placeholder when no data
     PlasmaComponents.Label {
-        visible: processList.processes.length === 0
+        visible: !processList.processes || processList.processes.length === 0
         text: "No process data"
         font.pixelSize: Kirigami.Theme.smallFont.pixelSize
         color: Kirigami.Theme.disabledTextColor

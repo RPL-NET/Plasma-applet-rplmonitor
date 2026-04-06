@@ -19,7 +19,6 @@ Item {
     Layout.preferredHeight: Kirigami.Units.gridUnit * 30
 
     // --- Active theme colors ---
-    // Resolved from Plasmoid.configuration.theme setting
     readonly property var theme: {
         var name = Plasmoid.configuration.theme || "btop";
         if (name === "minimal") return themes.minimal;
@@ -59,7 +58,6 @@ Item {
         })
     }
 
-    // Helper: pick CPU color based on theme
     function cpuColor(percent) {
         if (percent > 80) return theme.cpuHigh;
         if (percent > 50) return theme.cpuMid;
@@ -73,17 +71,19 @@ Item {
         return theme.tempCool;
     }
 
-    // --- Process reader via shell helper ---
+    // --- Process reader via shell ---
+    // Uses ps with -o for clean field extraction (avoids parsing issues with spaces in commands)
     PlasmaCore.DataSource {
         id: processSource
         engine: "executable"
         connectedSources: []
 
         property var processes: []
-        property string helperCmd: "ps aux --sort=-%cpu | head -6 | tail -5 | awk '{split($11, cmd, \"/\"); name=cmd[length(cmd)]; printf \"%s|%s|%s\\n\", name, $3, $4}'"
+        // Use -o for predictable output: comm gives just the process name, no path
+        property string helperCmd: "ps -eo comm:20,%cpu,%mem --sort=-%cpu --no-headers | head -5 | awk '{printf \"%s|%s|%s\\n\", $1, $2, $3}'"
 
         function refresh() {
-            if (connectedSources.length > 0) {
+            if (connectedSources.indexOf(helperCmd) !== -1) {
                 disconnectSource(helperCmd);
             }
             connectSource(helperCmd);
@@ -94,12 +94,16 @@ Item {
             var lines = stdout.trim().split("\n");
             var procs = [];
             for (var i = 0; i < lines.length; i++) {
-                var parts = lines[i].split("|");
+                var line = lines[i].trim();
+                if (line.length === 0) continue;
+                var parts = line.split("|");
                 if (parts.length >= 3) {
+                    var cpuVal = parseFloat(parts[1]);
+                    var memVal = parseFloat(parts[2]);
                     procs.push({
-                        name: parts[0],
-                        cpu: parseFloat(parts[1]) || 0,
-                        mem: parseFloat(parts[2]) || 0
+                        name: parts[0].trim(),
+                        cpu: isNaN(cpuVal) ? 0 : cpuVal,
+                        mem: isNaN(memVal) ? 0 : memVal
                     });
                 }
             }
@@ -107,7 +111,6 @@ Item {
             disconnectSource(source);
         }
 
-        // Refresh every 2 seconds
         Timer {
             interval: 2000
             running: true
@@ -123,37 +126,28 @@ Item {
         property var temperatures: []
 
         function readTemps() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/sys/class/thermal/thermal_zone0/temp");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    var temps = [];
-                    var val = parseInt(xhr.responseText.trim());
-                    if (!isNaN(val)) {
-                        temps.push({ name: "CPU", temp: Math.round(val / 1000) });
-                    }
-                    readAdditionalZones(temps, 1);
-                }
-            };
-            xhr.send();
+            readZone([], 0);
         }
 
-        function readAdditionalZones(temps, zoneIdx) {
+        function readZone(temps, zoneIdx) {
             if (zoneIdx > 10) {
                 temperatures = temps;
                 return;
             }
+            var path = "/sys/class/thermal/thermal_zone" + zoneIdx + "/temp";
             var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/sys/class/thermal/thermal_zone" + zoneIdx + "/temp");
+            xhr.open("GET", path);
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.responseText && xhr.responseText.trim().length > 0) {
-                        var val = parseInt(xhr.responseText.trim());
+                    var text = (xhr.responseText || "").trim();
+                    if (text.length > 0) {
+                        var val = parseInt(text);
                         if (!isNaN(val) && val > 0) {
-                            temps.push({ name: "Zone " + zoneIdx, temp: Math.round(val / 1000) });
+                            var name = (zoneIdx === 0) ? "CPU" : "Zone " + zoneIdx;
+                            temps.push({ name: name, temp: Math.round(val / 1000) });
                         }
                     }
-                    readAdditionalZones(temps, zoneIdx + 1);
+                    readZone(temps, zoneIdx + 1);
                 }
             };
             xhr.send();
@@ -168,24 +162,30 @@ Item {
         }
     }
 
-    // --- GPU temperature via helper ---
+    // --- GPU temperature via hwmon ---
     PlasmaCore.DataSource {
         id: gpuTempSource
         engine: "executable"
         connectedSources: []
 
         property int gpuTemp: -1
-        property string gpuCmd: "cat /sys/class/hwmon/hwmon*/temp1_input 2>/dev/null | head -1"
+        // Try nvidia-smi first, fallback to hwmon amdgpu
+        property string gpuCmd: "/bin/sh -c 'nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null || for f in /sys/class/hwmon/hwmon*/temp1_input; do name=$(cat \"$(dirname \"$f\")/name\" 2>/dev/null); if [ \"$name\" = \"amdgpu\" ] || [ \"$name\" = \"nvidia\" ]; then cat \"$f\" 2>/dev/null; break; fi; done'"
 
         function refresh() {
-            if (connectedSources.length > 0) disconnectSource(gpuCmd);
+            if (connectedSources.indexOf(gpuCmd) !== -1) disconnectSource(gpuCmd);
             connectSource(gpuCmd);
         }
 
         onNewData: function(source, data) {
             var stdout = (data["stdout"] || "").trim();
             var val = parseInt(stdout);
-            gpuTemp = !isNaN(val) ? Math.round(val / 1000) : -1;
+            if (!isNaN(val) && val > 0) {
+                // nvidia-smi returns degrees directly, hwmon returns millidegrees
+                gpuTemp = val > 1000 ? Math.round(val / 1000) : val;
+            } else {
+                gpuTemp = -1;
+            }
             disconnectSource(source);
         }
 

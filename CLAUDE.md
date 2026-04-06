@@ -52,18 +52,12 @@ plasma-applet-rplmonitor/
 │   │   │   ├── DiskGraph.qml
 │   │   │   ├── TempDisplay.qml
 │   │   │   └── ProcessList.qml
-│   │   └── themes/
-│   │       ├── btop.qml
-│   │       ├── minimal.qml
-│   │       └── terminal.qml
 │   ├── config/
 │   │   ├── main.xml
 │   │   ├── config.qml
 │   │   └── ConfigAppearance.qml
 │   └── icons/
 │       └── rplmonitor.svg
-└── tools/
-    └── sensors-helper.sh
 ```
 
 ## Roadmap

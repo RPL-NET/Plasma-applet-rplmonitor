@@ -32,8 +32,8 @@ PlasmoidItem {
         return Math.round(bytesPerSec) + " B/s";
     }
 
-    // Configurable update interval (milliseconds)
-    property int updateInterval: Plasmoid.configuration.updateInterval || 1000
+    // Configurable update interval (milliseconds), clamped to safe range
+    property int updateInterval: Math.max(250, Plasmoid.configuration.updateInterval || 1000)
 
     // --- CPU data reader ---
     // Reads /proc/stat and computes total + per-core CPU usage
@@ -56,7 +56,10 @@ PlasmoidItem {
             xhr.open("GET", "/proc/stat");
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
-                    parseProcStat(xhr.responseText);
+                    var text = xhr.responseText || "";
+                    if (text.length > 0) {
+                        parseProcStat(text);
+                    }
                 }
             };
             xhr.send();
@@ -69,7 +72,9 @@ PlasmoidItem {
             var newPrevCoreTotal = [];
 
             for (var i = 0; i < lines.length; i++) {
-                var parts = lines[i].split(/\s+/);
+                var parts = lines[i].trim().split(/\s+/);
+                if (parts.length < 5) continue;
+
                 if (parts[0] === "cpu") {
                     // Aggregate CPU line
                     var result = calcCpuDelta(parts, prevIdle, prevTotal);
@@ -79,6 +84,7 @@ PlasmoidItem {
                 } else if (parts[0].indexOf("cpu") === 0 && parts[0].length > 3) {
                     // Per-core lines (cpu0, cpu1, ...)
                     var coreIdx = parseInt(parts[0].substring(3));
+                    if (isNaN(coreIdx)) continue;
                     var oldIdle = (prevCoreIdle[coreIdx] !== undefined) ? prevCoreIdle[coreIdx] : 0;
                     var oldTotal = (prevCoreTotal[coreIdx] !== undefined) ? prevCoreTotal[coreIdx] : 0;
                     var coreResult = calcCpuDelta(parts, oldIdle, oldTotal);
@@ -117,7 +123,7 @@ PlasmoidItem {
 
             var percent = 0;
             if (diffTotal > 0) {
-                percent = Math.round((1.0 - diffIdle / diffTotal) * 100);
+                percent = Math.round(Math.min(100, Math.max(0, (1.0 - diffIdle / diffTotal) * 100)));
             }
 
             return { percent: percent, idle: totalIdle, total: total };
@@ -141,7 +147,10 @@ PlasmoidItem {
             xhr.open("GET", "/proc/meminfo");
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
-                    parseMemInfo(xhr.responseText);
+                    var text = xhr.responseText || "";
+                    if (text.length > 0) {
+                        parseMemInfo(text);
+                    }
                 }
             };
             xhr.send();
@@ -153,7 +162,10 @@ PlasmoidItem {
             for (var i = 0; i < lines.length; i++) {
                 var match = lines[i].match(/^(\w+):\s+(\d+)/);
                 if (match) {
-                    values[match[1]] = parseInt(match[2]); // in kB
+                    var val = parseInt(match[2]);
+                    if (!isNaN(val)) {
+                        values[match[1]] = val; // in kB
+                    }
                 }
             }
 
@@ -196,7 +208,10 @@ PlasmoidItem {
             xhr.open("GET", "/proc/net/dev");
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
-                    parseNetDev(xhr.responseText);
+                    var text = xhr.responseText || "";
+                    if (text.length > 0) {
+                        parseNetDev(text);
+                    }
                 }
             };
             xhr.send();
@@ -222,7 +237,7 @@ PlasmoidItem {
                 if (iface === "lo") continue;
 
                 var rxBytes = parseInt(rest[0]) || 0;
-                var txBytes = parseInt(rest[8]) || 0;
+                var txBytes = (rest.length > 8) ? (parseInt(rest[8]) || 0) : 0;
 
                 // Pick the interface with the most traffic
                 if (rxBytes + txBytes > bestRx + bestTx) {
@@ -241,7 +256,7 @@ PlasmoidItem {
                 return;
             }
 
-            var intervalSec = root.updateInterval / 1000;
+            var intervalSec = Math.max(1, root.updateInterval) / 1000;
             downloadSpeed = Math.max(0, (bestRx - prevRxBytes) / intervalSec);
             uploadSpeed = Math.max(0, (bestTx - prevTxBytes) / intervalSec);
 
@@ -282,7 +297,10 @@ PlasmoidItem {
             xhr.open("GET", "/proc/diskstats");
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
-                    parseDiskStats(xhr.responseText);
+                    var text = xhr.responseText || "";
+                    if (text.length > 0) {
+                        parseDiskStats(text);
+                    }
                 }
             };
             xhr.send();
@@ -298,8 +316,8 @@ PlasmoidItem {
                 if (parts.length < 14) continue;
 
                 var name = parts[2];
-                // Only count whole disks (sda, nvme0n1, vda) not partitions
-                if (/^(sd[a-z]|nvme\d+n\d+|vd[a-z])$/.test(name)) {
+                // Match whole disks: sda-sdz, sdaa+, nvmeXnY, vda-vdz, hda-hdz, mmcblkN
+                if (/^(sd[a-z]+|nvme\d+n\d+|vd[a-z]+|hd[a-z]|mmcblk\d+)$/.test(name)) {
                     totalReadSectors += parseInt(parts[5]) || 0;  // sectors read
                     totalWriteSectors += parseInt(parts[9]) || 0; // sectors written
                     if (!diskName) diskName = name;
@@ -313,7 +331,7 @@ PlasmoidItem {
                 return;
             }
 
-            var intervalSec = root.updateInterval / 1000;
+            var intervalSec = Math.max(1, root.updateInterval) / 1000;
             // Sector size is typically 512 bytes
             readSpeed = Math.max(0, (totalReadSectors - prevReadSectors) * 512 / intervalSec);
             writeSpeed = Math.max(0, (totalWriteSectors - prevWriteSectors) * 512 / intervalSec);
